@@ -53,6 +53,7 @@ export default function CinematicPortfolio() {
   const [navBg, setNavBg] = useState('bg-transparent');
   const [introActive, setIntroActive] = useState(true);
   const [flash, setFlash] = useState(false);
+  const [soundtrackStarted, setSoundtrackStarted] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0, dist: 0 });
   const [backgroundVideoPlayback, setBackgroundVideoPlayback] = useState(
     backgroundVideoPlaylists.map(() => ({ index: 0, activeSlot: 0 })),
@@ -134,14 +135,7 @@ export default function CinematicPortfolio() {
   }, [introActive]);
 
   const handlePlay = () => {
-    try {
-      const sfx = new Audio('https://actions.google.com/sounds/v1/foley/camera_flash.ogg');
-      sfx.volume = 0.5;
-      sfx.play().catch(err => console.log('SFX playback prevented:', err));
-    } catch {
-      console.log('Audio not supported');
-    }
-
+    setSoundtrackStarted(true);
     setFlash(true);
     setTimeout(() => {
       setIntroActive(false);
@@ -223,10 +217,14 @@ export default function CinematicPortfolio() {
           
           <button 
             onClick={handlePlay}
+            aria-label="Enter portfolio and start the soundtrack"
             className="z-10 group flex items-center justify-center w-28 h-28 rounded-full border border-white/30 bg-black/50 backdrop-blur-md hover:border-[#E50914] hover:scale-110 transition-all duration-300 shadow-[0_0_50px_rgba(229,9,20,0.4)]"
           >
             <Play size={48} className="text-white group-hover:text-[#E50914] ml-2 transition-colors" />
           </button>
+          <p className="absolute top-[calc(50%+5rem)] text-[0.6rem] font-bold uppercase tracking-[0.25em] text-white/60">
+            Enter with soundtrack
+          </p>
         </div>
       )}
 
@@ -462,6 +460,45 @@ export default function CinematicPortfolio() {
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase flex items-center gap-6">
               <span className="w-16 h-[1px] bg-[#E50914]"></span> THE INDIAN DHH SCENE
             </h3>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-6 mb-16">
+            <div className="grid gap-8 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-6 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)] md:items-center md:p-10">
+              <div>
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-[#E50914]">Portfolio soundtrack</p>
+                <h4 className="mt-4 text-2xl font-bold uppercase tracking-tight text-white">Now playing</h4>
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-gray-400">
+                  Starts when you enter the portfolio. Use the YouTube player controls to pause or adjust playback.
+                </p>
+                {!soundtrackStarted && (
+                  <p className="mt-4 text-xs text-gray-500">
+                    Press the intro play button to start the song.
+                  </p>
+                )}
+              </div>
+              <div className="aspect-video overflow-hidden rounded-2xl border border-zinc-800 bg-black">
+                {soundtrackStarted ? (
+                  <iframe
+                    className="h-full w-full"
+                    src="https://www.youtube-nocookie.com/embed/eLpS42vIli4?autoplay=1&loop=1&playlist=eLpS42vIli4&playsinline=1"
+                    title="Portfolio soundtrack on YouTube"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                ) : (
+                  <a
+                    href="https://music.youtube.com/watch?v=eLpS42vIli4"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex h-full items-center justify-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-400 transition-colors hover:text-white"
+                  >
+                    <Play size={20} className="text-[#E50914]" />
+                    Soundtrack loads after entering
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
           
           <div className="w-full marquee-container overflow-hidden">
