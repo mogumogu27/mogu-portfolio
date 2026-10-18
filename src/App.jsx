@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mail, Code2, Play, Camera } from 'lucide-react';
+import { Mail, Code2, Play, Camera, ExternalLink } from 'lucide-react';
 
 const albums = [
   { id: 1, title: "Nayaab - Seedhe Maut", cover: "/albums/nayaab.jpg" },
@@ -11,6 +11,17 @@ const albums = [
 ];
 
 const marqueeAlbums = [...albums, ...albums, ...albums, ...albums];
+const instagramReels = [
+  'DdlspV-yfNj',
+  'DdbZ7y9yOvz',
+  'DdOw8EgI8KM',
+  'Dc0ixWLIuBk',
+  'DcbDnSgIShC',
+  'Db0WlDiNIFN',
+  'DbfitrGyNOc',
+  'DdM1f7QsAvf',
+  'DcvuAiKRYTc',
+];
 const backgroundVideoPlaylists = [
   ['img_2384', 'img_2785', 'img_2850', 'img_3202', 'img_5165', 'img_5175', 'img_5539', 'img_5603', 'img_6606', 'video_20251018_153942'],
   ['img_2756', 'img_2839', 'img_2854', 'img_4565', 'img_5330', 'img_5540', 'img_5666', 'img_8468', 'vid-20250919-wa0000'],
@@ -324,40 +335,47 @@ export default function CinematicPortfolio() {
         {/* The Reel Section */}
         <section id="reel" className="py-32 px-6 bg-transparent border-t border-zinc-900/50">
           <div className="max-w-5xl mx-auto reveal opacity-0 translate-y-16">
-            <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-16 flex items-center gap-6">
-              WORKS
-            </h3>
-
-            <div className="relative h-[400px] md:h-[500px] flex justify-center items-center group w-full max-w-2xl mx-auto mt-10">
-              <a href="https://vimeo.com/" target="_blank" rel="noreferrer" className="block absolute w-48 md:w-64 aspect-[4/5] bg-zinc-950 rounded-3xl border border-zinc-800 p-2 shadow-2xl transition-all duration-500 ease-out transform -rotate-12 -translate-x-20 md:-translate-x-32 group-hover:-translate-x-32 md:group-hover:-translate-x-48 group-hover:-rotate-6 hover:!rotate-0 hover:!z-50 hover:!scale-110 z-10 cursor-pointer">
-                <div className="w-full h-full relative overflow-hidden group/card rounded-2xl">
-                  <img src="/reel1.jpg" alt="Film 1" className="w-full h-full object-cover grayscale opacity-70 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all duration-500 bg-zinc-800" />
-                  <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
-                    <h4 className="text-white text-sm font-bold uppercase tracking-widest">Silent Echoes</h4>
-                  </div>
-                </div>
+            <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-5 flex items-center gap-6">
+                  <span className="w-16 h-[1px] bg-[#E50914]"></span> WORKS
+                </h3>
+                <p className="max-w-xl text-sm leading-relaxed text-gray-400">
+                  A selection of films and reels I have made. Open any project to watch it on Instagram.
+                </p>
+              </div>
+              <a
+                href="https://www.instagram.com/mogu_captures/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-zinc-700 px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] text-gray-300 transition-colors hover:border-[#E50914] hover:text-white"
+              >
+                More on @mogu_captures <ExternalLink size={14} />
               </a>
+            </div>
 
-              <a href="https://www.instagram.com/reels/" target="_blank" rel="noreferrer" className="block absolute w-48 md:w-64 aspect-[4/5] bg-zinc-950 rounded-3xl border border-[#E50914] p-2 shadow-[0_0_30px_rgba(229,9,20,0.15)] transition-all duration-500 ease-out transform z-20 group-hover:-translate-y-8 hover:!z-50 hover:!scale-110 cursor-pointer">
-                <div className="w-full h-full relative overflow-hidden group/card rounded-2xl">
-                  <img src="/reel2.jpg" alt="Film 2" className="w-full h-full object-cover opacity-90 group-hover/card:opacity-100 transition-all duration-500 bg-zinc-800" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Play size={40} className="text-white/80 drop-shadow-lg group-hover/card:text-[#E50914] transition-colors" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {instagramReels.map((shortcode, index) => (
+                <a
+                  key={shortcode}
+                  href={`https://www.instagram.com/reel/${shortcode}/`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Watch Instagram film or reel ${index + 1}`}
+                  className="group flex min-h-32 items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#E50914]/70 hover:bg-zinc-900/80"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono text-sm text-[#E50914]">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <h4 className="text-sm font-bold uppercase tracking-[0.15em] text-white">
+                        Film / Reel {String(index + 1).padStart(2, '0')}
+                      </h4>
+                      <p className="mt-2 text-[0.65rem] uppercase tracking-[0.15em] text-gray-500">Watch on Instagram</p>
+                    </div>
                   </div>
-                  <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
-                    <h4 className="text-white text-sm font-bold uppercase tracking-widest">Redemption Arc</h4>
-                  </div>
-                </div>
-              </a>
-
-              <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" className="block absolute w-48 md:w-64 aspect-[4/5] bg-zinc-950 rounded-3xl border border-zinc-800 p-2 shadow-2xl transition-all duration-500 ease-out transform rotate-12 translate-x-20 md:translate-x-32 group-hover:translate-x-32 md:group-hover:translate-x-48 group-hover:rotate-6 hover:!rotate-0 hover:!z-50 hover:!scale-110 z-10 cursor-pointer">
-                <div className="w-full h-full relative overflow-hidden group/card rounded-2xl">
-                  <img src="/reel3.jpg" alt="Film 3" className="w-full h-full object-cover grayscale opacity-70 group-hover/card:grayscale-0 group-hover/card:opacity-100 transition-all duration-500 bg-zinc-800" />
-                  <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
-                    <h4 className="text-white text-sm font-bold uppercase tracking-widest">The Last Frame</h4>
-                  </div>
-                </div>
-              </a>
+                  <Play size={20} className="shrink-0 text-gray-500 transition-colors group-hover:text-[#E50914]" />
+                </a>
+              ))}
             </div>
           </div>
         </section>
