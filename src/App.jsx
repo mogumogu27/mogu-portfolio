@@ -13,22 +13,36 @@ const instagramReels = [
   'DcvuAiKRYTc',
 ];
 const galleryPhotos = [
-  'img_1186',
-  'img_1254',
-  'img_1283',
-  'img_1541',
-  'img_1637',
-  'img_1656',
-  'img_1789',
-  'img_1851',
-  'img_1954',
-  'img_2219',
-  'img_2332',
-  'img_4103',
-  'img_4716',
-  'img_5339',
-  'img_5614',
-  'img_6991',
+  { name: 'img_1186', width: 900, height: 1200 },
+  { name: 'img_1254', width: 900, height: 1200 },
+  { name: 'img_1283', width: 900, height: 1200 },
+  { name: 'img_1375', width: 900, height: 1200 },
+  { name: 'img_1541', width: 900, height: 1200 },
+  { name: 'img_1637', width: 900, height: 1200 },
+  { name: 'img_1656', width: 900, height: 1200 },
+  { name: 'img_1775', width: 900, height: 1200 },
+  { name: 'img_1789', width: 900, height: 1200 },
+  { name: 'img_1851', width: 900, height: 1200 },
+  { name: 'img_1954', width: 900, height: 1200 },
+  { name: 'img_2219', width: 900, height: 1200 },
+  { name: 'img_2332', width: 900, height: 1200 },
+  { name: 'img_2446', width: 900, height: 1200 },
+  { name: 'img_4008', width: 900, height: 1200 },
+  { name: 'img_4089', width: 900, height: 1200 },
+  { name: 'img_4103', width: 900, height: 1200 },
+  { name: 'img_4259', width: 900, height: 1200 },
+  { name: 'img_4716', width: 900, height: 1200 },
+  { name: 'img_5339', width: 900, height: 1200 },
+  { name: 'img_5513', width: 900, height: 675 },
+  { name: 'img_5532', width: 900, height: 675 },
+  { name: 'img_5545', width: 900, height: 1200 },
+  { name: 'img_5614', width: 675, height: 1200 },
+  { name: 'img_6821', width: 900, height: 1200 },
+  { name: 'img_6905', width: 900, height: 1200 },
+  { name: 'img_6906', width: 900, height: 507 },
+  { name: 'img_6991', width: 900, height: 1200 },
+  { name: 'img_8647', width: 900, height: 1200 },
+  { name: 'img_9948', width: 900, height: 1200 },
 ];
 const backgroundVideoPlaylists = [
   ['img_2384', 'img_2785', 'img_2850', 'img_3202', 'img_5165', 'img_5175', 'img_5539', 'img_5603', 'img_6606', 'video_20251018_153942'],
@@ -319,17 +333,17 @@ export default function CinematicPortfolio() {
               GALLERY
             </h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 px-4 sm:px-6 pb-12">
-               {galleryPhotos.map((photo) => (
-                 <div key={photo} className="gallery-card group w-full aspect-[4/5] relative overflow-hidden bg-zinc-950 rounded-3xl border border-zinc-800/50">
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 sm:gap-8 px-4 sm:px-6 pb-12">
+               {galleryPhotos.map(({ name, width, height }) => (
+                 <div key={name} className="gallery-card group mb-5 sm:mb-8 w-full break-inside-avoid relative overflow-hidden bg-zinc-950 rounded-3xl border border-zinc-800/50">
                    <img 
-                     src={`${import.meta.env.BASE_URL}photos/${photo}.webp`}
-                     alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
-                     loading="eager"
+                     src={`${import.meta.env.BASE_URL}photos/${name}.webp`}
+                     alt={`Portfolio photography ${name.replace('img_', 'IMG ')}`}
+                     loading="lazy"
                      decoding="async"
-                     width="900"
-                     height="1200"
-                     className="gallery-image w-full h-full object-cover bg-zinc-800 transition-transform duration-500 ease-out group-hover:scale-105"
+                     width={width}
+                     height={height}
+                     className="gallery-image block h-auto w-full object-cover bg-zinc-800 transition-transform duration-500 ease-out group-hover:scale-105"
                    />
                  </div>
                ))}
