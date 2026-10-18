@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mail, Code2, Play, Camera, ExternalLink } from 'lucide-react';
+import { Mail, Play, ExternalLink } from 'lucide-react';
 
 const instagramReels = [
   'DdlspV-yfNj',
@@ -41,7 +41,14 @@ function BackgroundVideos() {
   const [playback, setPlayback] = useState(
     backgroundVideoPlaylists.map(() => ({ index: 0, activeSlot: 0 })),
   );
+  const [mediaReady, setMediaReady] = useState(false);
   const videoRefs = useRef([]);
+  const preloadedIndices = useRef([]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setMediaReady(true), 1800);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-0 bg-black overflow-hidden flex gap-1 transform -rotate-12 scale-125 opacity-40">
@@ -61,11 +68,22 @@ function BackgroundVideos() {
                     if (!videoRefs.current[lane]) videoRefs.current[lane] = [];
                     videoRefs.current[lane][slot] = video;
                   }}
-                  src={`${import.meta.env.BASE_URL}videos/${videoId}.mp4`}
-                  autoPlay={isActive}
+                  src={mediaReady ? `${import.meta.env.BASE_URL}videos/${videoId}.mp4` : undefined}
+                  autoPlay={mediaReady && isActive}
                   muted
                   playsInline
-                  preload="auto"
+                  preload={isActive ? 'auto' : 'metadata'}
+                  onTimeUpdate={isActive ? (event) => {
+                    const video = event.currentTarget;
+                    if (video.duration - video.currentTime <= 3 && preloadedIndices.current[lane] !== index) {
+                      preloadedIndices.current[lane] = index;
+                      const nextVideo = videoRefs.current[lane][1 - activeSlot];
+                      if (nextVideo) {
+                        nextVideo.preload = 'auto';
+                        nextVideo.load();
+                      }
+                    }
+                  } : undefined}
                   onEnded={isActive ? () => {
                     const nextSlot = 1 - activeSlot;
                     videoRefs.current[lane][nextSlot]?.play();
@@ -88,11 +106,8 @@ function BackgroundVideos() {
 
 export default function CinematicPortfolio() {
   const avatarRef = useRef(null);
-  const cursorRef = useRef(null);
   const progressRef = useRef(null);
   const navRef = useRef(null);
-  const avatarShineRef = useRef(null);
-  const avatarRotationRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     let animationFrame = 0;
@@ -111,7 +126,7 @@ export default function CinematicPortfolio() {
       }
       if (avatarRef.current && window.scrollY < 350) {
         avatarRef.current.style.opacity = `${Math.max(1 - scrollY / 350, 0)}`;
-        avatarRef.current.style.transform = `scale(${Math.max(1 - scrollY / 600, 0.5)}) perspective(1000px) rotateX(${-avatarRotationRef.current.y * 1.5}deg) rotateY(${avatarRotationRef.current.x * 1.5}deg)`;
+        avatarRef.current.style.transform = `scale(${Math.max(1 - scrollY / 600, 0.5)})`;
         avatarRef.current.style.pointerEvents = scrollY >= 350 ? 'none' : 'auto';
       }
     };
@@ -127,50 +142,11 @@ export default function CinematicPortfolio() {
     };
   }, []);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
-        cursorRef.current.style.opacity = '0.4';
-      }
-
-      if (avatarRef.current) {
-        const rect = avatarRef.current.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const dx = e.clientX - centerX;
-        const dy = e.clientY - centerY;
-        
-        const maxPupilMove = 8; 
-        const distance = Math.min(Math.sqrt(dx * dx + dy * dy) / 12, maxPupilMove);
-        const angle = Math.atan2(dy, dx);
-        
-        const pupilX = Math.cos(angle) * distance;
-        const pupilY = Math.sin(angle) * distance;
-        avatarRotationRef.current = { x: pupilX, y: pupilY };
-        avatarRef.current.style.transform = `scale(${Math.max(1 - window.scrollY / 600, 0.5)}) perspective(1000px) rotateX(${-pupilY * 1.5}deg) rotateY(${pupilX * 1.5}deg)`;
-        if (avatarShineRef.current) {
-          avatarShineRef.current.style.background = `radial-gradient(circle at ${50 + pupilX * 4}% ${50 + pupilY * 4}%, rgba(255,255,255,0.8) 0%, transparent 60%)`;
-        }
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   return (
     <div className="min-h-screen bg-black text-gray-200 selection:bg-[#E50914] selection:text-white overflow-x-hidden relative" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
       
       {/* Scroll Progress Bar */}
       <div ref={progressRef} className="fixed top-0 left-0 h-[3px] bg-[#E50914] z-[1000] shadow-[0_0_10px_rgba(229,9,20,0.8)]"></div>
-
-      {/* Custom Cursor Glow */}
-      <div 
-        ref={cursorRef}
-        className="pointer-events-none fixed top-0 left-0 w-40 h-40 -mt-20 -ml-20 rounded-full bg-[#E50914] mix-blend-screen filter blur-[60px] opacity-0 transition-opacity duration-700 z-[9999]"
-        style={{ willChange: 'transform' }}
-      ></div>
 
       <BackgroundVideos />
 
@@ -212,21 +188,18 @@ export default function CinematicPortfolio() {
           </div>
 
           <div 
-            className="origin-center transition-transform duration-100 ease-out relative z-20 mt-4"
-            style={{ opacity: 1, transform: 'scale(1) perspective(1000px)', pointerEvents: 'auto' }}
+            className="origin-center relative z-20 mt-4"
+            style={{ opacity: 1, transform: 'scale(1)', pointerEvents: 'auto' }}
             ref={avatarRef}
           >
             <div className="relative w-60 h-72 md:w-72 md:h-80 rounded-3xl overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(229,9,20,0.25)] group bg-zinc-950">
               <img 
-                src={`${import.meta.env.BASE_URL}mogu-avatar.png`}
+                src={`${import.meta.env.BASE_URL}mogu-avatar.webp`}
                 alt="Mrigank Gupta Avatar" 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-full object-cover"
               />
-              <div 
-                className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay transition-opacity duration-300"
-                ref={avatarShineRef}
-                style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 60%)' }}
-              ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
             </div>
           </div>
@@ -331,17 +304,16 @@ export default function CinematicPortfolio() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6 pb-12">
                {galleryPhotos.map((photo) => (
-                 <div key={photo} className="w-full aspect-[4/5] relative group overflow-hidden bg-zinc-950/60 backdrop-blur-sm rounded-3xl border border-zinc-800/50 shadow-2xl hover:border-gray-500 transition-colors">
+                 <div key={photo} className="w-full aspect-[4/5] relative overflow-hidden bg-zinc-950 rounded-3xl border border-zinc-800/50">
                    <img 
-                     src={`${import.meta.env.BASE_URL}photos/${photo}.jpg`}
+                     src={`${import.meta.env.BASE_URL}photos/${photo}.webp`}
                      alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
-                     loading="lazy"
+                     loading="eager"
                      decoding="async"
-                     className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out bg-zinc-800" 
+                     width="900"
+                     height="1200"
+                     className="w-full h-full object-cover bg-zinc-800"
                    />
-                   <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/20">
-                     <Camera size={48} strokeWidth={1} className="text-white drop-shadow-2xl" />
-                   </div>
                  </div>
                ))}
             </div>
@@ -437,14 +409,20 @@ export default function CinematicPortfolio() {
             
             <a href="https://github.com/mogumogu27" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
               <div className="text-gray-500 group-hover:text-[#E50914] group-hover:-translate-y-1 transition-all duration-300">
-                <Code2 size={24} strokeWidth={1.5} />
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+                  <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.3 9.4 7.88 10.93.58.1.79-.25.79-.56v-2.1c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.71 1.25 3.37.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+                </svg>
               </div>
               <span className="text-[0.55rem] font-bold tracking-[0.2em] text-gray-600 group-hover:text-white uppercase">GitHub</span>
             </a>
             
             <a href="https://www.instagram.com/mrigank_27/" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
               <div className="text-gray-500 group-hover:text-[#E50914] group-hover:-translate-y-1 transition-all duration-300">
-                <Camera size={24} strokeWidth={1.5} />
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                </svg>
               </div>
               <span className="text-[0.55rem] font-bold tracking-[0.2em] text-gray-600 group-hover:text-white uppercase">Instagram</span>
             </a>
