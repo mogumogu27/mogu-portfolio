@@ -58,10 +58,30 @@ function BackgroundVideos() {
   const [mediaReady, setMediaReady] = useState(false);
   const videoRefs = useRef([]);
   const preloadedIndices = useRef([]);
+  const playbackRef = useRef(playback);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setMediaReady(true), 1800);
     return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      videoRefs.current.flat().forEach((video) => video?.pause());
+      if (document.hidden) return;
+
+      playbackRef.current.forEach(({ activeSlot }, lane) => {
+        const video = videoRefs.current[lane]?.[activeSlot];
+        if (video) {
+          video.play().catch((error) => {
+            console.warn('Background video could not resume.', error);
+          });
+        }
+      });
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   return (
@@ -86,7 +106,7 @@ function BackgroundVideos() {
                   autoPlay={mediaReady && isActive}
                   muted
                   playsInline
-                  preload={isActive ? 'auto' : 'metadata'}
+                  preload={isActive ? 'auto' : 'none'}
                   onTimeUpdate={isActive ? (event) => {
                     const video = event.currentTarget;
                     if (video.duration - video.currentTime <= 3 && preloadedIndices.current[lane] !== index) {
@@ -100,10 +120,12 @@ function BackgroundVideos() {
                   } : undefined}
                   onEnded={isActive ? () => {
                     const nextSlot = 1 - activeSlot;
+                    const nextPlayback = { index: (index + 1) % playlist.length, activeSlot: nextSlot };
+                    playbackRef.current[lane] = nextPlayback;
                     videoRefs.current[lane][nextSlot]?.play();
                     setPlayback((currentPlayback) => currentPlayback.map(
                       (current, currentLane) => currentLane === lane
-                        ? { index: (index + 1) % playlist.length, activeSlot: nextSlot }
+                        ? nextPlayback
                         : current,
                     ));
                   } : undefined}
