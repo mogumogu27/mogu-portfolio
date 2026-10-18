@@ -399,13 +399,13 @@ export default function CinematicPortfolio() {
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-[#E50914]">Portfolio soundtrack</p>
                 <h4 className="mt-4 text-2xl font-bold uppercase tracking-tight text-white">Portfolio soundtrack</h4>
                 <p className="mt-3 max-w-lg text-sm leading-relaxed text-gray-400">
-                  Start playback with the YouTube player controls.
+                  Playback starts automatically when your browser allows it. If it is blocked, press play in the YouTube player.
                 </p>
               </div>
               <div className="aspect-video overflow-hidden rounded-2xl border border-zinc-800 bg-black">
                 <iframe
                   className="h-full w-full"
-                  src="https://www.youtube-nocookie.com/embed/eLpS42vIli4?autoplay=0&loop=1&playlist=eLpS42vIli4&playsinline=1"
+                  src="https://www.youtube-nocookie.com/embed/eLpS42vIli4?autoplay=1&loop=1&playlist=eLpS42vIli4&playsinline=1"
                   title="Portfolio soundtrack on YouTube"
                   loading="lazy"
                   allow="autoplay; encrypted-media; picture-in-picture"
