@@ -22,6 +22,24 @@ const instagramReels = [
   'DdM1f7QsAvf',
   'DcvuAiKRYTc',
 ];
+const galleryPhotos = [
+  'img_1186',
+  'img_1254',
+  'img_1283',
+  'img_1541',
+  'img_1637',
+  'img_1656',
+  'img_1789',
+  'img_1851',
+  'img_1954',
+  'img_2219',
+  'img_2332',
+  'img_4103',
+  'img_4716',
+  'img_5339',
+  'img_5614',
+  'img_6991',
+];
 const backgroundVideoPlaylists = [
   ['img_2384', 'img_2785', 'img_2850', 'img_3202', 'img_5165', 'img_5175', 'img_5539', 'img_5603', 'img_6606', 'video_20251018_153942'],
   ['img_2756', 'img_2839', 'img_2854', 'img_4565', 'img_5330', 'img_5540', 'img_5666', 'img_8468', 'vid-20250919-wa0000'],
@@ -387,12 +405,12 @@ export default function CinematicPortfolio() {
               GALLERY
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-6 pb-12">
-               {[1, 2, 3, 4, 5, 6].map((item) => (
-                 <div key={item} className="w-full aspect-[4/5] relative group overflow-hidden bg-zinc-950/60 backdrop-blur-sm rounded-3xl border border-zinc-800/50 shadow-2xl hover:border-gray-500 transition-colors">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6 pb-12">
+               {galleryPhotos.map((photo) => (
+                 <div key={photo} className="w-full aspect-[4/5] relative group overflow-hidden bg-zinc-950/60 backdrop-blur-sm rounded-3xl border border-zinc-800/50 shadow-2xl hover:border-gray-500 transition-colors">
                    <img 
-                     src={`/photo-${item}.jpg`} 
-                     alt={`Photography ${item}`} 
+                     src={`/photos/${photo}.jpg`} 
+                     alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out bg-zinc-800" 
                    />
                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/20">
