@@ -175,7 +175,7 @@ export default function CinematicPortfolio() {
                       if (!backgroundVideoRefs.current[lane]) backgroundVideoRefs.current[lane] = [];
                       backgroundVideoRefs.current[lane][slot] = video;
                     }}
-                    src={`/videos/${videoId}.mp4`}
+                    src={`${import.meta.env.BASE_URL}videos/${videoId}.mp4`}
                     autoPlay={isActive}
                     muted
                     playsInline
@@ -269,7 +269,7 @@ export default function CinematicPortfolio() {
           >
             <div className="relative w-60 h-72 md:w-72 md:h-80 rounded-3xl overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(229,9,20,0.25)] group bg-zinc-950">
               <img 
-                src="/mogu-avatar.png" 
+                src={`${import.meta.env.BASE_URL}mogu-avatar.png`}
                 alt="Mrigank Gupta Avatar" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -385,7 +385,7 @@ export default function CinematicPortfolio() {
                {galleryPhotos.map((photo) => (
                  <div key={photo} className="w-full aspect-[4/5] relative group overflow-hidden bg-zinc-950/60 backdrop-blur-sm rounded-3xl border border-zinc-800/50 shadow-2xl hover:border-gray-500 transition-colors">
                    <img 
-                     src={`/photos/${photo}.jpg`} 
+                     src={`${import.meta.env.BASE_URL}photos/${photo}.jpg`}
                      alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out bg-zinc-800" 
                    />
