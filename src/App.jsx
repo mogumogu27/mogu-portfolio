@@ -1,16 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mail, Code2, Play, Camera, ExternalLink } from 'lucide-react';
 
-const albums = [
-  { id: 1, title: "Nayaab - Seedhe Maut", cover: "/albums/nayaab.jpg" },
-  { id: 2, title: "Bayaan - Seedhe Maut", cover: "/albums/bayaan.jpg" },
-  { id: 3, title: "Lunch Break - Seedhe Maut", cover: "/albums/lunchbreak.jpg" },
-  { id: 4, title: "Punya Paap - DIVINE", cover: "/albums/punyapaap.jpg" },
-  { id: 5, title: "Still Here - KR$NA", cover: "/albums/stillhere.jpg" },
-  { id: 6, title: "Hard Drive - Raftaar", cover: "/albums/harddrive.jpg" }
-];
-
-const marqueeAlbums = [...albums, ...albums, ...albums, ...albums];
 const instagramReels = [
   'DdlspV-yfNj',
   'DdbZ7y9yOvz',
@@ -240,18 +230,6 @@ export default function CinematicPortfolio() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        @keyframes scroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(calc(-250px * 9 - 1.5rem * 9)); }
-        }
-        .animate-marquee {
-          display: flex;
-          width: fit-content;
-          animation: scroll 30s linear infinite;
-        }
-        .marquee-container:hover .animate-marquee {
-          animation-play-state: paused;
-        }
       `}} />
 
       <header id="home" className="relative h-[85vh] flex flex-col items-center pt-24 md:pt-32 gap-4 overflow-hidden bg-transparent z-10">
@@ -458,7 +436,7 @@ export default function CinematicPortfolio() {
         <section id="music" className="py-32 bg-transparent border-t border-zinc-900/50 overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 reveal opacity-0 translate-y-16 mb-16">
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase flex items-center gap-6">
-              <span className="w-16 h-[1px] bg-[#E50914]"></span> THE INDIAN DHH SCENE
+              <span className="w-16 h-[1px] bg-[#E50914]"></span> MUSIC
             </h3>
           </div>
 
@@ -498,28 +476,6 @@ export default function CinematicPortfolio() {
                   </a>
                 )}
               </div>
-            </div>
-          </div>
-          
-          <div className="w-full marquee-container overflow-hidden">
-            <div className="animate-marquee gap-6 px-6">
-              {marqueeAlbums.map((album, idx) => (
-                <div 
-                  key={`${album.id}-${idx}`} 
-                  className="w-[250px] h-[250px] shrink-0 relative group rounded-3xl overflow-hidden shadow-2xl bg-zinc-900 border-2 border-zinc-800 hover:border-[#E50914] transition-colors duration-300"
-                >
-                  <img 
-                    src={album.cover} 
-                    alt={album.title} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-105 group-hover:scale-100"
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10 backdrop-blur-[2px]">
-                    <span className="text-white text-xs font-bold tracking-widest uppercase text-center px-4">
-                      {album.title}
-                    </span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
