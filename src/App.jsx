@@ -37,66 +37,98 @@ const backgroundVideoPlaylists = [
 ];
 const backgroundLanePositions = ['', 'translate-y-12', '-translate-y-12'];
 
-export default function CinematicPortfolio() {
-  const [scrollY, setScrollY] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [navBg, setNavBg] = useState('bg-transparent');
-  const [introActive, setIntroActive] = useState(true);
-  const [flash, setFlash] = useState(false);
-  const [soundtrackStarted, setSoundtrackStarted] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0, dist: 0 });
-  const [backgroundVideoPlayback, setBackgroundVideoPlayback] = useState(
+function BackgroundVideos() {
+  const [playback, setPlayback] = useState(
     backgroundVideoPlaylists.map(() => ({ index: 0, activeSlot: 0 })),
   );
-  const backgroundVideoRefs = useRef([]);
+  const videoRefs = useRef([]);
+
+  return (
+    <div className="fixed inset-0 z-0 bg-black overflow-hidden flex gap-1 transform -rotate-12 scale-125 opacity-40">
+      {backgroundVideoPlaylists.map((playlist, lane) => {
+        const { index, activeSlot } = playback[lane];
+
+        return (
+          <div key={lane} className={`relative h-full w-1/3 shrink-0 overflow-hidden ${backgroundLanePositions[lane]}`}>
+            {[0, 1].map((slot) => {
+              const isActive = slot === activeSlot;
+              const videoId = playlist[(index + (isActive ? 0 : 1)) % playlist.length];
+
+              return (
+                <video
+                  key={`${lane}-${slot}`}
+                  ref={(video) => {
+                    if (!videoRefs.current[lane]) videoRefs.current[lane] = [];
+                    videoRefs.current[lane][slot] = video;
+                  }}
+                  src={`${import.meta.env.BASE_URL}videos/${videoId}.mp4`}
+                  autoPlay={isActive}
+                  muted
+                  playsInline
+                  preload="auto"
+                  onEnded={isActive ? () => {
+                    const nextSlot = 1 - activeSlot;
+                    videoRefs.current[lane][nextSlot]?.play();
+                    setPlayback((currentPlayback) => currentPlayback.map(
+                      (current, currentLane) => currentLane === lane
+                        ? { index: (index + 1) % playlist.length, activeSlot: nextSlot }
+                        : current,
+                    ));
+                  } : undefined}
+                  className={`absolute inset-0 h-full w-full object-cover blur-[1px] transition-opacity duration-200 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                />
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function CinematicPortfolio() {
   const avatarRef = useRef(null);
   const cursorRef = useRef(null);
+  const progressRef = useRef(null);
+  const navRef = useRef(null);
+  const avatarShineRef = useRef(null);
+  const avatarRotationRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-      
-      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
-      setScrollProgress(scrolled);
+    let animationFrame = 0;
+    const updateScrollEffects = () => {
+      animationFrame = 0;
+      const scrollY = window.scrollY;
+      const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = documentHeight > 0 ? (scrollY / documentHeight) * 100 : 0;
 
-      if (window.scrollY > 80) {
-        setNavBg('bg-black/95 backdrop-blur-md border-b border-zinc-900');
-      } else {
-        setNavBg('bg-transparent border-b border-transparent');
+      if (progressRef.current) progressRef.current.style.width = `${progress}%`;
+      if (navRef.current) {
+        const isScrolled = scrollY > 80;
+        navRef.current.style.backgroundColor = isScrolled ? 'rgba(0, 0, 0, 0.95)' : 'transparent';
+        navRef.current.style.backdropFilter = isScrolled ? 'blur(12px)' : 'none';
+        navRef.current.style.borderColor = isScrolled ? '#18181b' : 'transparent';
+      }
+      if (avatarRef.current && window.scrollY < 350) {
+        avatarRef.current.style.opacity = `${Math.max(1 - scrollY / 350, 0)}`;
+        avatarRef.current.style.transform = `scale(${Math.max(1 - scrollY / 600, 0.5)}) perspective(1000px) rotateX(${-avatarRotationRef.current.y * 1.5}deg) rotateY(${avatarRotationRef.current.x * 1.5}deg)`;
+        avatarRef.current.style.pointerEvents = scrollY >= 350 ? 'none' : 'auto';
       }
     };
+    const handleScroll = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(updateScrollEffects);
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    updateScrollEffects();
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    };
   }, []);
 
   useEffect(() => {
-    const observerCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('opacity-100', 'translate-y-0');
-          entry.target.classList.remove('opacity-0', 'translate-y-16');
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1,
-    });
-    
-    const elements = document.querySelectorAll('.reveal');
-    elements.forEach((el) => observer.observe(el));
-
-    return () => elements.forEach((el) => observer.unobserve(el));
-  }, [introActive]);
-
-  useEffect(() => {
     const handleMouseMove = (e) => {
-      if (introActive) return;
-
       if (cursorRef.current) {
         cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
         cursorRef.current.style.opacity = '0.4';
@@ -116,112 +148,33 @@ export default function CinematicPortfolio() {
         
         const pupilX = Math.cos(angle) * distance;
         const pupilY = Math.sin(angle) * distance;
-        
-        setMousePos({ x: pupilX, y: pupilY, dist: distance });
+        avatarRotationRef.current = { x: pupilX, y: pupilY };
+        avatarRef.current.style.transform = `scale(${Math.max(1 - window.scrollY / 600, 0.5)}) perspective(1000px) rotateX(${-pupilY * 1.5}deg) rotateY(${pupilX * 1.5}deg)`;
+        if (avatarShineRef.current) {
+          avatarShineRef.current.style.background = `radial-gradient(circle at ${50 + pupilX * 4}% ${50 + pupilY * 4}%, rgba(255,255,255,0.8) 0%, transparent 60%)`;
+        }
       }
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [introActive]);
-
-  const handlePlay = () => {
-    setSoundtrackStarted(true);
-    setFlash(true);
-    setTimeout(() => {
-      setIntroActive(false);
-      setTimeout(() => setFlash(false), 800); 
-    }, 150); 
-  };
-
-  const avatarOpacity = Math.max(1 - scrollY / 350, 0);
-  const avatarScale = Math.max(1 - scrollY / 600, 0.5);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-gray-200 selection:bg-[#E50914] selection:text-white overflow-x-hidden relative" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
       
       {/* Scroll Progress Bar */}
-      <div className="fixed top-0 left-0 h-[3px] bg-[#E50914] z-[1000] transition-all duration-150 ease-out shadow-[0_0_10px_rgba(229,9,20,0.8)]" style={{ width: `${scrollProgress}%` }}></div>
-
-      {/* Cinematic REC Indicator */}
-      {!introActive && (
-        <div className="fixed top-24 md:top-6 right-6 z-[900] flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full border border-zinc-800 shadow-lg animate-[fade-in_1s_ease-out_forwards]">
-          <div className="w-2.5 h-2.5 bg-[#E50914] rounded-full animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_8px_rgba(229,9,20,0.8)]"></div>
-          <span className="text-[#E50914] text-[0.6rem] font-bold tracking-[0.2em]">REC</span>
-        </div>
-      )}
+      <div ref={progressRef} className="fixed top-0 left-0 h-[3px] bg-[#E50914] z-[1000] shadow-[0_0_10px_rgba(229,9,20,0.8)]"></div>
 
       {/* Custom Cursor Glow */}
       <div 
         ref={cursorRef}
-        className="pointer-events-none fixed top-0 left-0 w-64 h-64 -mt-32 -ml-32 rounded-full bg-[#E50914] mix-blend-screen filter blur-[100px] opacity-0 transition-opacity duration-700 z-[9999]"
+        className="pointer-events-none fixed top-0 left-0 w-40 h-40 -mt-20 -ml-20 rounded-full bg-[#E50914] mix-blend-screen filter blur-[60px] opacity-0 transition-opacity duration-700 z-[9999]"
         style={{ willChange: 'transform' }}
       ></div>
 
-      {/* DIAGONAL BLURRED BACKGROUND VIDEOS */}
-      <div className="fixed inset-0 z-0 bg-black overflow-hidden flex gap-1 transform -rotate-12 scale-125 opacity-40">
-        {backgroundVideoPlaylists.map((playlist, lane) => {
-          const { index, activeSlot } = backgroundVideoPlayback[lane];
-
-          return (
-            <div key={lane} className={`relative h-full w-1/3 shrink-0 overflow-hidden ${backgroundLanePositions[lane]}`}>
-              {[0, 1].map((slot) => {
-                const isActive = slot === activeSlot;
-                const videoId = playlist[(index + (isActive ? 0 : 1)) % playlist.length];
-
-                return (
-                  <video
-                    key={`${lane}-${slot}`}
-                    ref={(video) => {
-                      if (!backgroundVideoRefs.current[lane]) backgroundVideoRefs.current[lane] = [];
-                      backgroundVideoRefs.current[lane][slot] = video;
-                    }}
-                    src={`${import.meta.env.BASE_URL}videos/${videoId}.mp4`}
-                    autoPlay={isActive}
-                    muted
-                    playsInline
-                    preload="auto"
-                    onEnded={isActive ? () => {
-                      const nextSlot = 1 - activeSlot;
-                      backgroundVideoRefs.current[lane][nextSlot]?.play();
-                      setBackgroundVideoPlayback((playback) => playback.map(
-                        (current, currentLane) => currentLane === lane
-                          ? { index: (index + 1) % playlist.length, activeSlot: nextSlot }
-                          : current,
-                      ));
-                    } : undefined}
-                    className={`absolute inset-0 h-full w-full object-cover blur-[1px] transition-opacity duration-200 ${isActive ? 'opacity-100' : 'opacity-0'}`}
-                  />
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-
-      {introActive && (
-        <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-[#E50914] rounded-full mix-blend-screen filter blur-[150px] opacity-30"></div>
-          <div className="absolute -top-32 -right-32 w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[150px] opacity-30"></div>
-          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-green-600 rounded-full mix-blend-screen filter blur-[150px] opacity-30"></div>
-          <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-pink-600 rounded-full mix-blend-screen filter blur-[150px] opacity-30"></div>
-          
-          <button 
-            onClick={handlePlay}
-            aria-label="Enter portfolio and start the soundtrack"
-            className="z-10 group flex items-center justify-center w-28 h-28 rounded-full border border-white/30 bg-black/50 backdrop-blur-md hover:border-[#E50914] hover:scale-110 transition-all duration-300 shadow-[0_0_50px_rgba(229,9,20,0.4)]"
-          >
-            <Play size={48} className="text-white group-hover:text-[#E50914] ml-2 transition-colors" />
-          </button>
-          <p className="absolute top-[calc(50%+5rem)] text-[0.6rem] font-bold uppercase tracking-[0.25em] text-white/60">
-            Enter with soundtrack
-          </p>
-        </div>
-      )}
-
-      <div className={`fixed inset-0 z-[150] bg-white pointer-events-none transition-opacity duration-[800ms] ease-out ${flash ? 'opacity-100' : 'opacity-0'}`}></div>
+      <BackgroundVideos />
 
       <style dangerouslySetInnerHTML={{__html: `
-        .reveal { transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #050505; }
@@ -260,11 +213,7 @@ export default function CinematicPortfolio() {
 
           <div 
             className="origin-center transition-transform duration-100 ease-out relative z-20 mt-4"
-            style={{ 
-              opacity: avatarOpacity, 
-              transform: `scale(${avatarScale}) perspective(1000px) rotateX(${-mousePos.y * 1.5}deg) rotateY(${mousePos.x * 1.5}deg)`,
-              pointerEvents: avatarOpacity === 0 ? 'none' : 'auto'
-            }}
+            style={{ opacity: 1, transform: 'scale(1) perspective(1000px)', pointerEvents: 'auto' }}
             ref={avatarRef}
           >
             <div className="relative w-60 h-72 md:w-72 md:h-80 rounded-3xl overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(229,9,20,0.25)] group bg-zinc-950">
@@ -275,9 +224,8 @@ export default function CinematicPortfolio() {
               />
               <div 
                 className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay transition-opacity duration-300"
-                style={{
-                  background: `radial-gradient(circle at ${50 + (mousePos.x || 0) * 4}% ${50 + (mousePos.y || 0) * 4}%, rgba(255,255,255,0.8) 0%, transparent 60%)`
-                }}
+                ref={avatarShineRef}
+                style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 60%)' }}
               ></div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
             </div>
@@ -285,7 +233,7 @@ export default function CinematicPortfolio() {
         </div>
       </header>
 
-      <nav className={`sticky top-0 w-full z-50 transition-all duration-500 ${navBg} shadow-2xl`}>
+      <nav ref={navRef} className="sticky top-0 w-full z-50 transition-all duration-300 border-b border-transparent shadow-2xl">
         <div className="max-w-4xl mx-auto px-6 py-5 flex justify-center items-center overflow-x-auto no-scrollbar">
           <div className="flex space-x-6 md:space-x-12 text-[0.65rem] font-bold tracking-[0.2em] uppercase text-gray-400 whitespace-nowrap">
             <a href="#about" className="hover:text-white transition-colors">About</a>
@@ -300,7 +248,7 @@ export default function CinematicPortfolio() {
       <main className="relative z-10">
         {/* About Section - TEXT ONLY AS REQUESTED */}
         <section id="about" className="py-32 px-6 bg-transparent">
-          <div className="max-w-4xl mx-auto reveal opacity-0 translate-y-16">
+          <div className="max-w-4xl mx-auto">
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-8 flex items-center gap-6">
               ABOUT
             </h3>
@@ -328,7 +276,7 @@ export default function CinematicPortfolio() {
 
         {/* The Reel Section */}
         <section id="reel" className="py-32 px-6 bg-transparent border-t border-zinc-900/50">
-          <div className="max-w-5xl mx-auto reveal opacity-0 translate-y-16">
+          <div className="max-w-5xl mx-auto">
             <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div>
                 <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-5 flex items-center gap-6">
@@ -376,7 +324,7 @@ export default function CinematicPortfolio() {
 
         {/* Vertical Gallery Section */}
         <section id="gallery" className="py-32 bg-transparent border-t border-zinc-900/50">
-          <div className="max-w-6xl mx-auto reveal opacity-0 translate-y-16">
+          <div className="max-w-6xl mx-auto">
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-12 px-6 flex items-center gap-6">
               GALLERY
             </h3>
@@ -387,6 +335,8 @@ export default function CinematicPortfolio() {
                    <img 
                      src={`${import.meta.env.BASE_URL}photos/${photo}.jpg`}
                      alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
+                     loading="lazy"
+                     decoding="async"
                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out bg-zinc-800" 
                    />
                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/20">
@@ -400,7 +350,7 @@ export default function CinematicPortfolio() {
 
         {/* Hobbies & Vibe */}
         <section id="vibe" className="py-32 px-6 bg-transparent border-t border-zinc-900/50">
-          <div className="max-w-7xl mx-auto reveal opacity-0 translate-y-16">
+          <div className="max-w-7xl mx-auto">
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase mb-16 flex items-center gap-6">
               <span className="w-16 h-[1px] bg-[#E50914]"></span> HOBBIES & VIBE
             </h3>
@@ -434,7 +384,7 @@ export default function CinematicPortfolio() {
 
         {/* Music Section (Text Overlay only, No Modal) */}
         <section id="music" className="py-32 bg-transparent border-t border-zinc-900/50 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 reveal opacity-0 translate-y-16 mb-16">
+          <div className="max-w-7xl mx-auto px-6 mb-16">
             <h3 className="text-[#E50914] text-xs font-bold tracking-[0.3em] uppercase flex items-center gap-6">
               <span className="w-16 h-[1px] bg-[#E50914]"></span> MUSIC
             </h3>
@@ -444,37 +394,21 @@ export default function CinematicPortfolio() {
             <div className="grid gap-8 rounded-3xl border border-zinc-800 bg-zinc-950/70 p-6 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)] md:items-center md:p-10">
               <div>
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-[#E50914]">Portfolio soundtrack</p>
-                <h4 className="mt-4 text-2xl font-bold uppercase tracking-tight text-white">Now playing</h4>
+                <h4 className="mt-4 text-2xl font-bold uppercase tracking-tight text-white">Portfolio soundtrack</h4>
                 <p className="mt-3 max-w-lg text-sm leading-relaxed text-gray-400">
-                  Starts when you enter the portfolio. Use the YouTube player controls to pause or adjust playback.
+                  Start playback with the YouTube player controls.
                 </p>
-                {!soundtrackStarted && (
-                  <p className="mt-4 text-xs text-gray-500">
-                    Press the intro play button to start the song.
-                  </p>
-                )}
               </div>
               <div className="aspect-video overflow-hidden rounded-2xl border border-zinc-800 bg-black">
-                {soundtrackStarted ? (
-                  <iframe
-                    className="h-full w-full"
-                    src="https://www.youtube-nocookie.com/embed/eLpS42vIli4?autoplay=1&loop=1&playlist=eLpS42vIli4&playsinline=1"
-                    title="Portfolio soundtrack on YouTube"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                ) : (
-                  <a
-                    href="https://music.youtube.com/watch?v=eLpS42vIli4"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex h-full items-center justify-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-gray-400 transition-colors hover:text-white"
-                  >
-                    <Play size={20} className="text-[#E50914]" />
-                    Soundtrack loads after entering
-                  </a>
-                )}
+                <iframe
+                  className="h-full w-full"
+                  src="https://www.youtube-nocookie.com/embed/eLpS42vIli4?autoplay=0&loop=1&playlist=eLpS42vIli4&playsinline=1"
+                  title="Portfolio soundtrack on YouTube"
+                  loading="lazy"
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
               </div>
             </div>
           </div>
@@ -483,7 +417,7 @@ export default function CinematicPortfolio() {
       </main>
 
       <footer className="py-24 px-6 bg-transparent border-t border-zinc-900/50 relative z-10">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 reveal opacity-0 translate-y-16">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="text-center md:text-left">
             <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">
               MOGU<span className="text-[#E50914]">.</span>
