@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery-image {
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .gallery-card:hover .gallery-image {
+    transform: scale(1.06);
+  }
+}
+
+@media (pointer: coarse) {
+  .cursor-glow {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  #about,
+  #reel,
+  #vibe {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  #gallery {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  #music {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}

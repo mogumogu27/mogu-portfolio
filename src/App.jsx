@@ -106,8 +106,15 @@ function BackgroundVideos() {
 
 export default function CinematicPortfolio() {
   const avatarRef = useRef(null);
+  const cursorRef = useRef(null);
   const progressRef = useRef(null);
   const navRef = useRef(null);
+
+  const handlePointerMove = (event) => {
+    if (event.pointerType !== 'mouse' || !cursorRef.current) return;
+    cursorRef.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+    cursorRef.current.style.opacity = '0.4';
+  };
 
   useEffect(() => {
     let animationFrame = 0;
@@ -143,10 +150,20 @@ export default function CinematicPortfolio() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-gray-200 selection:bg-[#E50914] selection:text-white overflow-x-hidden relative" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+    <div
+      onPointerMove={handlePointerMove}
+      className="min-h-screen bg-black text-gray-200 selection:bg-[#E50914] selection:text-white overflow-x-hidden relative"
+      style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
+    >
       
       {/* Scroll Progress Bar */}
       <div ref={progressRef} className="fixed top-0 left-0 h-[3px] bg-[#E50914] z-[1000] shadow-[0_0_10px_rgba(229,9,20,0.8)]"></div>
+
+      <div
+        ref={cursorRef}
+        aria-hidden="true"
+        className="cursor-glow pointer-events-none fixed top-0 left-0 z-[9999] h-40 w-40 -mt-20 -ml-20 rounded-full bg-[#E50914] opacity-0 mix-blend-screen blur-[60px] transition-opacity duration-300 will-change-transform"
+      ></div>
 
       <BackgroundVideos />
 
@@ -161,7 +178,7 @@ export default function CinematicPortfolio() {
 
       `}} />
 
-      <header id="home" className="relative h-[85vh] flex flex-col items-center pt-24 md:pt-32 gap-4 overflow-hidden bg-transparent z-10">
+      <header id="home" className="relative h-[85svh] min-h-[34rem] flex flex-col items-center pt-24 md:pt-32 gap-4 overflow-hidden bg-transparent z-10">
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-[0.5em] uppercase z-10 mb-4">
           MOGU
         </h1>
@@ -207,8 +224,8 @@ export default function CinematicPortfolio() {
       </header>
 
       <nav ref={navRef} className="sticky top-0 w-full z-50 transition-all duration-300 border-b border-transparent shadow-2xl">
-        <div className="max-w-4xl mx-auto px-6 py-5 flex justify-center items-center overflow-x-auto no-scrollbar">
-          <div className="flex space-x-6 md:space-x-12 text-[0.65rem] font-bold tracking-[0.2em] uppercase text-gray-400 whitespace-nowrap">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-5 flex justify-center items-center overflow-x-auto no-scrollbar">
+          <div className="flex space-x-3 sm:space-x-6 md:space-x-12 text-[0.6rem] sm:text-[0.65rem] font-bold tracking-[0.2em] uppercase text-gray-400 whitespace-nowrap">
             <a href="#about" className="hover:text-white transition-colors">About</a>
             <a href="#reel" className="hover:text-white transition-colors text-[#E50914]">The Reel</a>
             <a href="#gallery" className="hover:text-white transition-colors">Gallery</a>
@@ -302,9 +319,9 @@ export default function CinematicPortfolio() {
               GALLERY
             </h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-6 pb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 px-4 sm:px-6 pb-12">
                {galleryPhotos.map((photo) => (
-                 <div key={photo} className="w-full aspect-[4/5] relative overflow-hidden bg-zinc-950 rounded-3xl border border-zinc-800/50">
+                 <div key={photo} className="gallery-card group w-full aspect-[4/5] relative overflow-hidden bg-zinc-950 rounded-3xl border border-zinc-800/50">
                    <img 
                      src={`${import.meta.env.BASE_URL}photos/${photo}.webp`}
                      alt={`Portfolio photography ${photo.replace('img_', 'IMG ')}`} 
@@ -312,7 +329,7 @@ export default function CinematicPortfolio() {
                      decoding="async"
                      width="900"
                      height="1200"
-                     className="w-full h-full object-cover bg-zinc-800"
+                     className="gallery-image w-full h-full object-cover bg-zinc-800 transition-transform duration-500 ease-out group-hover:scale-105"
                    />
                  </div>
                ))}
@@ -336,7 +353,7 @@ export default function CinematicPortfolio() {
                 { title: "Fact Collector", desc: "Driven by an insatiable curiosity, I am a relentless collector of obscure facts, continually expanding my knowledge about the world.", tags: ["Knowledge", "Curiosity"] },
                 { title: "Spreading Love", desc: "Beyond the realms of art and data, my greatest driving force is empathy—striving to ensure that the people around me feel truly valued, heard, and cherished.", tags: ["Empathy", "Connection"] }
               ].map((proj, idx) => (
-                <div key={idx} className="group border border-zinc-800/50 p-10 hover:border-[#E50914] transition-colors duration-300 bg-zinc-950/60 backdrop-blur-sm rounded-3xl flex flex-col justify-between shadow-xl">
+                <div key={idx} className="group border border-zinc-800/50 p-6 md:p-10 hover:border-[#E50914] transition-colors duration-300 bg-zinc-950/60 backdrop-blur-sm rounded-3xl flex flex-col justify-between shadow-xl">
                   <div>
                     <h4 className="text-xl font-bold text-white tracking-tight uppercase mb-4">{proj.title}</h4>
                     <p className="text-sm text-gray-400 leading-relaxed mb-8">{proj.desc}</p>
