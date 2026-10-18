@@ -538,21 +538,21 @@ export default function CinematicPortfolio() {
           </div>
           
           <div className="flex gap-8">
-            <a href="mailto:mrigank@example.com" className="group flex flex-col items-center gap-4">
+            <a href="mailto:mrigank8073@outlook.com" className="group flex flex-col items-center gap-4">
               <div className="text-gray-500 group-hover:text-[#E50914] group-hover:-translate-y-1 transition-all duration-300">
                 <Mail size={24} strokeWidth={1.5} />
               </div>
               <span className="text-[0.55rem] font-bold tracking-[0.2em] text-gray-600 group-hover:text-white uppercase">Email</span>
             </a>
             
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
+            <a href="https://github.com/mogumogu27" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
               <div className="text-gray-500 group-hover:text-[#E50914] group-hover:-translate-y-1 transition-all duration-300">
                 <Code2 size={24} strokeWidth={1.5} />
               </div>
               <span className="text-[0.55rem] font-bold tracking-[0.2em] text-gray-600 group-hover:text-white uppercase">GitHub</span>
             </a>
             
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
+            <a href="https://www.instagram.com/mrigank_27/" target="_blank" rel="noreferrer" className="group flex flex-col items-center gap-4">
               <div className="text-gray-500 group-hover:text-[#E50914] group-hover:-translate-y-1 transition-all duration-300">
                 <Camera size={24} strokeWidth={1.5} />
               </div>
